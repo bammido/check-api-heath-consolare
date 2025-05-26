@@ -17,16 +17,27 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [apiHealthRes, setApiHealthRes] = useState<ApiHealth[] | null>(null);
 
-  const checkHealth = async () => {
+  const checkHealth = async (signal: AbortSignal) => {
     setIsLoading(true);
-    const res = await fetch(`/api/healthCheck`);
+    const res = await fetch(`/api/healthCheck`, { signal });
     const data = await res.json();
     setApiHealthRes(data);
     setIsLoading(false);
   };
 
   useEffect(() => {
-    checkHealth();
+    const controller = new AbortController();
+
+    checkHealth(controller.signal);
+
+    const interval = setInterval(() => {
+      checkHealth(controller.signal);
+    }, 5 * 60 * 1000);
+
+    return () => {
+      controller.abort();
+      clearInterval(interval);
+    };
   }, []);
 
   return (
@@ -59,22 +70,14 @@ function ApiHealthTable({ apiHealthRes }: { apiHealthRes: ApiHealth[] }) {
           <TableRow key={api.apiName}>
             <TableCell className="font-medium">{api.apiName}</TableCell>
             <TableCell className="justify-center flex items-center gap-4">
-              <HealthStatusIcon healthy={api.healthy} />
-              {api.healthy ? 'saudável' : 'não saudável'}
+              {/* <HealthStatusIcon healthy={api.healthy} /> */}
+
+              {api.healthy ? '✅' : '❌'}
+              {api.healthy ? 'Saudável' : 'Indisponível'}
             </TableCell>
           </TableRow>
         ))}
       </TableBody>
     </Table>
-  );
-}
-
-function HealthStatusIcon({ healthy }: { healthy: boolean }) {
-  return (
-    <div
-      className={`border-2 border-transparent min-w-3 min-h-3 rounded-full ${
-        healthy ? 'bg-green-500' : 'bg-red-500'
-      }`}
-    />
   );
 }
