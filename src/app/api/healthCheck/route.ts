@@ -11,14 +11,18 @@ export async function GET() {
       payHmlStatus,
       payPrdStatus,
       vindiHmlStatus,
-      vindiPrdStatus
+      vindiPrdStatus,
+      tefHmlStatus,
+      tefPrdStatus
     ] = await Promise.all([
       checkPortalVendas({ environment: 'hml' }),
       checkPortalVendas({ environment: 'prd' }),
       checkConsolarePay({ environment: 'hml' }),
       checkConsolarePay({ environment: 'prd' }),
       checkVindi({ environment: 'hml' }),
-      checkVindi({ environment: 'prd' })
+      checkVindi({ environment: 'prd' }),
+      checkTEF({ environment: 'hml' }),
+      checkTEF({ environment: 'prd' })
     ]);
 
     response = [
@@ -27,7 +31,9 @@ export async function GET() {
       payHmlStatus,
       payPrdStatus,
       vindiHmlStatus,
-      vindiPrdStatus
+      vindiPrdStatus,
+      tefHmlStatus,
+      tefPrdStatus
     ];
   } catch (error) {
     console.log(error);
@@ -86,7 +92,7 @@ async function checkConsolarePay({
   );
 
   return {
-    apiName: `consolare pay ${environment}`,
+    apiName: `consolare pay vindi ${environment}`,
     healthy: response.ok,
     lastChecked: new Date()
   };
@@ -115,6 +121,24 @@ async function checkVindi({
 
   return {
     apiName: `vindi ${environment}`,
+    healthy: response.ok,
+    lastChecked: new Date()
+  };
+}
+
+async function checkTEF({
+  environment
+}: {
+  environment: 'prd' | 'hml';
+}): Promise<ApiHealth> {
+  const response = await fetch(
+    `${
+      environment === 'prd' ? process.env.TEF_URL_PRD! : process.env.TEF_URL_HML!
+    }/live`
+  );
+
+  return {
+    apiName: `consolare pay TEF ${environment}`,
     healthy: response.ok,
     lastChecked: new Date()
   };
