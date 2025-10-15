@@ -45,6 +45,7 @@ export default function Home() {
       <div className="m-auto">
         <h1 className="text-center font-bold text-3xl mb-8">Ambiente Consolare</h1>
         {isLoading && <span>carregando...</span>}
+
         {!isLoading && apiHealthRes && <ApiHealthTable apiHealthRes={apiHealthRes} />}
       </div>
     </div>
